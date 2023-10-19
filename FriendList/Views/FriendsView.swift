@@ -64,24 +64,7 @@ struct FriendsView: View {
                     cachedUsers.nsPredicate = nil
                 }
             }
-//            .toolbar {
-//                Button("Reload") {
-//                    Task {
-//                        await loadAndPersist()
-//                        print(friendsVm.users)
-//                    }
-//                }
-//                
-//                Button("Clear") {
-//                    for user in cachedUsers {
-//                        moc.delete(user)
-//                    }
-//                    
-//                    try? moc.save()
-//                }
-//            }
         } // Navigation
-        .environmentObject(friendsVm)
         .task {
             if cachedUsers.isEmpty {
                 await loadAndPersist()

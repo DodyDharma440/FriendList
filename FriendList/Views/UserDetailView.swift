@@ -15,14 +15,10 @@ struct ScrollViewPreference: PreferenceKey {
 
 struct UserDetailView: View {
     @Environment(\.dismiss) var dismiss
-    @EnvironmentObject var friendsVm: FriendsViewModel
-    
     @FetchRequest var users: FetchedResults<CachedUser>
     
     @State private var heroHeight = 0.0
     @State private var isShowMiniHeader = false
-    
-    @State private var animatedHeader = false
     
     init(id: String) {
         _users = FetchRequest<CachedUser>(sortDescriptors: [], predicate: NSPredicate(format: "id == %@", id))
@@ -259,6 +255,5 @@ struct UserDetailView: View {
     return NavigationStack {
         WithDummyData()
             .mocPreview()
-            .environmentObject(FriendsViewModel())
     }
 }
