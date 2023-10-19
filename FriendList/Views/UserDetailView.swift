@@ -7,17 +7,12 @@
 
 import SwiftUI
 
-struct ScrollViewPreference: PreferenceKey {
-    static var defaultValue: CGPoint = .zero
-    
-    static func reduce(value: inout CGPoint, nextValue: () -> CGPoint) {}
-}
-
 struct UserDetailView: View {
+    private let coordinateSpaceName = "scroll"
+    
     @Environment(\.dismiss) var dismiss
     @FetchRequest var users: FetchedResults<CachedUser>
     
-    @State private var heroHeight = 0.0
     @State private var isShowMiniHeader = false
     
     init(id: String) {
@@ -28,54 +23,38 @@ struct UserDetailView: View {
         users.first
     }
     
-    var color: Color {
-        if let user = user {
-            return user.isActive ? .blue : .red
-        }
-        return .gray
-    }
-    
     var body: some View {
         Group {
             if let user = user {
                 ZStack(alignment: .top) {
                     VStack(spacing: 0) {
                         ScrollView {
-                            GeometryReader { proxy in
-                                VStack {
-                                    Avatar(
-                                        name: user.wrappedName,
-                                        size: 120,
-                                        color: user.isActive ? .blue : .red
-                                    )
-                                    .padding(.top)
-                                    .font(.system(size: 50, design: .rounded))
-                                    
-                                    Text(user.wrappedName)
-                                        .multilineTextAlignment(.center)
-                                        .font(.largeTitle)
-                                        .fontWeight(.semibold)
-                                    
-                                    Text(user.wrappedEmail)
-                                } // VStack
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 50)
-                                .background(
-                                    GeometryReader { proxy in
-                                        LinearGradient(
-                                            colors: [color.opacity(0.6), color.opacity(0.3)],
-                                            startPoint: .bottom,
-                                            endPoint: .top
-                                        )
-                                        .onAppear {
-                                            heroHeight = proxy.size.height
-                                        }
-                                    }
+                            VStack {
+                                Avatar(
+                                    name: user.wrappedName,
+                                    size: 120,
+                                    color: user.isActive ? .blue : .red
                                 )
-                                .offset(y: proxy.frame(in: .global).minY > 0 ? -proxy.frame(in: .global).minY : 0)
-                            }
-                            .frame(height: heroHeight)
+                                .padding(.top)
+                                .font(.system(size: 50, design: .rounded))
+                                
+                                Text(user.wrappedName)
+                                    .multilineTextAlignment(.center)
+                                    .font(.largeTitle)
+                                    .fontWeight(.semibold)
+                                
+                                Text(user.wrappedEmail)
+                            } // VStack
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 50)
+                            .stickyTop { proxy in
+                                LinearGradient(
+                                    colors: [user.color.opacity(0.6), user.color.opacity(0.3)],
+                                    startPoint: .bottom,
+                                    endPoint: .top
+                                )
+                            } // VStack
                             
                             
                             VStack(spacing: 30) {
@@ -94,10 +73,10 @@ struct UserDetailView: View {
                                 } // ListGroup
                                 
                                 ListGroup {
-                                    DetailItem(label: "Register at", value: user.wrappedRegistered.formatted(date: .long, time: .omitted))
+                                    DetailItem(label: "Register at", value: user.formattedDate)
                                     Divider()
                                         .padding(.bottom, 6)
-                                    DetailItem(label: "Tags", value: user.wrappedTags.joined(separator: ", "))
+                                    DetailItem(label: "Tags", value: user.displayedTags)
                                 } // ListGroup
                                 
                                 VStack(alignment: .leading) {
@@ -136,13 +115,7 @@ struct UserDetailView: View {
                                     } // ListGroup
                                 } // VStack
                             } // VStack
-                            .background(
-                                GeometryReader { proxy in
-                                    Color.clear
-                                        .preference(key: ScrollViewPreference.self, value: proxy.frame(in: .named("scroll")).origin)
-                                }
-                            )
-                            .onPreferenceChange(ScrollViewPreference.self, perform: { value in
+                            .trackScroll(name: coordinateSpaceName) { value in
                                 if value.y < 200 {
                                     withAnimation {
                                         isShowMiniHeader = true
@@ -152,14 +125,14 @@ struct UserDetailView: View {
                                         isShowMiniHeader = false
                                     }
                                 }
-                            })
+                            }
                             .padding(.vertical, 20)
                             .padding(.horizontal)
                         } // Scroll
                         .background(
                             Color(UIColor.secondarySystemBackground)
                         )
-                        .coordinateSpace(name: "scroll")
+                        .coordinateSpace(name: coordinateSpaceName)
                         .ignoresSafeArea(.container, edges: .top)
                     } // VStack
                     .frame(maxHeight: .infinity)

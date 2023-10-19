@@ -8,6 +8,7 @@
 
 import Foundation
 import CoreData
+import SwiftUI
 
 
 extension CachedUser {
@@ -63,6 +64,18 @@ extension CachedUser {
     var wrappedFriends: [CachedFriend] {
         let set = friends as? Set<CachedFriend> ?? []
         return Array(set)
+    }
+    
+    var color: Color {
+        isActive ? .blue : .red
+    }
+    
+    var displayedTags: String {
+        wrappedTags.joined(separator: ", ")
+    }
+    
+    var formattedDate: String {
+        wrappedRegistered.formatted(date: .long, time: .omitted)
     }
 }
 
